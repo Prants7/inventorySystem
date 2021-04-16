@@ -3,11 +3,10 @@ package prants.InventoryManagement.userControllers;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 import prants.InventoryManagement.authentication.UserAuthenticationService;
+import prants.InventoryManagement.user.LogInInfo;
 import prants.InventoryManagement.user.UserCrudService;
 import prants.InventoryManagement.user.User;
 
@@ -24,7 +23,7 @@ public class PublicUsersController {
     @NonNull
     UserCrudService users;
 
-    @PostMapping("/register")
+    /*@PostMapping("/register")
     String register(
             @RequestParam("username") final String username,
             @RequestParam("password") final String password) {
@@ -39,12 +38,30 @@ public class PublicUsersController {
                 );
 
         return login(username, password);
+    }*/
+
+    @PostMapping(path = "/register", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            MediaType.MULTIPART_FORM_DATA_VALUE})
+    String registerWithForm( @ModelAttribute LogInInfo registerForm) {
+        users
+                .save(
+                        User
+                                .builder()
+                                .id(registerForm.getUsername())
+                                .username(registerForm.getUsername())
+                                .password(registerForm.getPassword())
+                                .build()
+                );
+
+        return login(registerForm.getUsername(), registerForm.getPassword());
     }
 
     @PostMapping("/login")
     String login(
-            @RequestParam("username") final String username,
-            @RequestParam("password") final String password) {
+            /*@RequestParam("username") final String username,
+            @RequestParam("password") final String password) {*/
+            @RequestBody final String username,
+            @RequestBody final String password) {
         return authentication
                 .login(username, password)
                 .orElseThrow(() -> new RuntimeException("invalid login and/or password"));
